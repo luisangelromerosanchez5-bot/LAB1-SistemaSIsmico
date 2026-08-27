@@ -12,7 +12,7 @@ import '../local/cola_local.dart';
 class ApiEventos {
   final Dio _dio;
   final ColaLocal _cola;
-  final String dispositivoId;
+  String dispositivoId;
 
   ApiEventos({
     required this.dispositivoId,
@@ -21,20 +21,27 @@ class ApiEventos {
   })  : _cola = cola ?? ColaLocal(),
         _dio = Dio(BaseOptions(
           baseUrl: baseUrl,
-          connectTimeout: const Duration(seconds: 5),
-          receiveTimeout: const Duration(seconds: 5),
+          connectTimeout: const Duration(seconds: 8),
+          receiveTimeout: const Duration(seconds: 8),
         ));
 
   Future<void> asegurarRegistroDispositivo() async {
     try {
-      await _dio.post(
+      final respuesta = await _dio.post(
         '/api/dispositivos',
         data: {
           'identificador': dispositivoId,
           'modelo': 'Android Device',
         },
       );
-    } catch (_) {}
+      if (respuesta.data != null && respuesta.data['id'] != null) {
+        final serverId = respuesta.data['id'] as String;
+        dispositivoId = serverId;
+        await _cola.sobrescribirDispositivoId(serverId);
+      }
+    } catch (e) {
+      debugPrint('Aviso registro dispositivo: $e');
+    }
   }
 
   Future<void> sincronizarPendientes() async {
