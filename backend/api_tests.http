@@ -1,0 +1,56 @@
+### 1. Estado de Salud de la API
+GET http://localhost:8000/
+Accept: application/json
+
+### 2. Registrar un Dispositivo Móvil
+POST http://localhost:8000/api/dispositivos
+Content-Type: application/json
+
+{
+  "identificador": "EQUIPO-LAB-01",
+  "modelo": "Samsung Galaxy A36"
+}
+
+### 3. Crear Evento de Impacto (Demostración de Idempotencia con clave_cliente)
+POST http://localhost:8000/api/eventos
+Content-Type: application/json
+
+{
+  "dispositivo_id": "3a7e8b9c-1234-4567-89ab-cdef01234567",
+  "clave_cliente": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "magnitud": 22.4,
+  "severidad": "moderado",
+  "latitud": 4.678,
+  "longitud": -74.055,
+  "precision_m": 8.2,
+  "ocurrido_en": "2026-08-27T12:00:00Z"
+}
+
+### 4. Subir Lote de Eventos (Cola sin conexión)
+POST http://localhost:8000/api/eventos/lote
+Content-Type: application/json
+
+[
+  {
+    "dispositivo_id": "3a7e8b9c-1234-4567-89ab-cdef01234567",
+    "clave_cliente": "b2c3d4e5-f6a7-8901-bcde-f23456789012",
+    "magnitud": 16.5,
+    "severidad": "leve",
+    "ocurrido_en": "2026-08-27T12:05:00Z"
+  },
+  {
+    "dispositivo_id": "3a7e8b9c-1234-4567-89ab-cdef01234567",
+    "clave_cliente": "c3d4e5f6-a7b8-9012-cdef-345678901234",
+    "magnitud": 38.2,
+    "severidad": "fuerte",
+    "ocurrido_en": "2026-08-27T12:10:00Z"
+  }
+]
+
+### 5. Consultar Histórico con Filtros y Paginación
+GET http://localhost:8000/api/eventos?pagina=1&tamano_pagina=20
+Accept: application/json
+
+### 6. Resumen de Severidad por Día
+GET http://localhost:8000/api/eventos/resumen
+Accept: application/json

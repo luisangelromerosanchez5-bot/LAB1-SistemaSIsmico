@@ -1,0 +1,40 @@
+name: bitacora_sismica
+description: "P1 · Bitácora sísmica CEET — Actividad No. 5 SENA"
+publish_to: "none"
+version: 0.1.0
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+  # Sensores y ubicación (RF-01, RF-02)
+  sensors_plus: ^6.0.1
+  geolocator: ^13.0.1
+
+  # Persistencia local / cola sin conexión (RF-04)
+  sqflite: ^2.3.3+1
+  path: ^1.9.0
+
+  # Cliente HTTP con interceptores (para el envío a la API)
+  dio: ^5.7.0
+
+  # Generación de UUID como clave de cliente (idempotencia)
+  uuid: ^4.5.1
+
+  # Estado (siguiendo la pila de referencia de la guía: Riverpod)
+  flutter_riverpod: ^2.6.1
+
+  # Detectar conectividad para disparar la sincronización (RF-05)
+  connectivity_plus: ^6.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true

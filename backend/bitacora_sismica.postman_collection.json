@@ -1,0 +1,116 @@
+{
+	"info": {
+		"_postman_id": "b1f0a1b2-c3d4-4e5f-9a0b-1c2d3e4f5a6b",
+		"name": "P1 · Bitácora Sísmica CEET API",
+		"description": "Colección de peticiones HTTP para probar los endpoints de la API de FastAPI (SENA ADSO P1).",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Salud de la API",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "8000",
+					"path": [""]
+				}
+			}
+		},
+		{
+			"name": "2. Registrar Dispositivo",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"identificador\": \"EQUIPO-LAB-01\",\n  \"modelo\": \"Samsung Galaxy A36\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/dispositivos",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "8000",
+					"path": ["api", "dispositivos"]
+				}
+			}
+		},
+		{
+			"name": "3. Crear Evento de Impacto (Idempotente)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"dispositivo_id\": \"3a7e8b9c-1234-4567-89ab-cdef01234567\",\n  \"clave_cliente\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n  \"magnitud\": 22.4,\n  \"severidad\": \"moderado\",\n  \"latitud\": 4.678,\n  \"longitud\": -74.055,\n  \"precision_m\": 8.2,\n  \"ocurrido_en\": \"2026-08-27T12:00:00Z\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/eventos",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "8000",
+					"path": ["api", "eventos"]
+				}
+			}
+		},
+		{
+			"name": "4. Enviar Lote de Eventos (Sincronización)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n  {\n    \"dispositivo_id\": \"3a7e8b9c-1234-4567-89ab-cdef01234567\",\n    \"clave_cliente\": \"b2c3d4e5-f6a7-8901-bcde-f23456789012\",\n    \"magnitud\": 16.5,\n    \"severidad\": \"leve\",\n    \"ocurrido_en\": \"2026-08-27T12:05:00Z\"\n  },\n  {\n    \"dispositivo_id\": \"3a7e8b9c-1234-4567-89ab-cdef01234567\",\n    \"clave_cliente\": \"c3d4e5f6-a7b8-9012-cdef-345678901234\",\n    \"magnitud\": 38.2,\n    \"severidad\": \"fuerte\",\n    \"ocurrido_en\": \"2026-08-27T12:10:00Z\"\n  }\n]"
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/eventos/lote",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "8000",
+					"path": ["api", "eventos", "lote"]
+				}
+			}
+		},
+		{
+			"name": "5. Listar Eventos Paginados",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/api/eventos?pagina=1&tamano_pagina=20",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "8000",
+					"path": ["api", "eventos"],
+					"query": [
+						{ "key": "pagina", "value": "1" },
+						{ "key": "tamano_pagina", "value": "20" }
+					]
+				}
+			}
+		},
+		{
+			"name": "6. Obteer Resumen de Severidad por Día",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/api/eventos/resumen",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "8000",
+					"path": ["api", "eventos", "resumen"]
+				}
+			}
+		}
+	]
+}
