@@ -28,28 +28,43 @@ def _crear_o_recuperar_evento(evento: schemas.EventoCrear, db: Session) -> model
     if evento.ocurrido_en > datetime.now(timezone.utc) + timedelta(minutes=10):
         raise HTTPException(status_code=422, detail="Marca de tiempo en el futuro")
 
-    # Auto-registro transparente de dispositivo si el id UUID no existía aún en la BD.
+    # 1. Asegurar que el dispositivo existe en la base de datos
     dispositivo = (
         db.query(models.Dispositivo)
-        .filter(models.Dispositivo.id == evento.dispositivo_id)
+        .filter(
+            (models.Dispositivo.id == evento.dispositivo_id) |
+            (models.Dispositivo.identificador == str(evento.dispositivo_id))
+        )
         .first()
     )
     if not dispositivo:
-        nuevo_disp = models.Dispositivo(
+        dispositivo = models.Dispositivo(
             id=evento.dispositivo_id,
             identificador=str(evento.dispositivo_id),
             modelo="Android Device",
         )
-        db.add(nuevo_disp)
+        db.add(dispositivo)
         try:
             db.commit()
-        except IntegrityError:
+            db.refresh(dispositivo)
+        except Exception:
             db.rollback()
+            dispositivo = (
+                db.query(models.Dispositivo)
+                .filter(
+                    (models.Dispositivo.id == evento.dispositivo_id) |
+                    (models.Dispositivo.identificador == str(evento.dispositivo_id))
+                )
+                .first()
+            )
 
+    dispositivo_id_real = dispositivo.id if dispositivo else evento.dispositivo_id
+
+    # 2. Idempotencia: Verificar si ya existe este evento
     existente = (
         db.query(models.EventoImpacto)
         .filter(
-            models.EventoImpacto.dispositivo_id == evento.dispositivo_id,
+            models.EventoImpacto.dispositivo_id == dispositivo_id_real,
             models.EventoImpacto.clave_cliente == evento.clave_cliente,
         )
         .first()
@@ -58,10 +73,16 @@ def _crear_o_recuperar_evento(evento: schemas.EventoCrear, db: Session) -> model
         # Reintento: devolvemos el mismo registro, no creamos uno nuevo.
         return existente
 
-    nuevo = models.EventoImpacto(**evento.model_dump())
+    # 3. Insertar el nuevo evento asegurando el dispositivo_id_real
+    datos = evento.model_dump()
+    datos["dispositivo_id"] = dispositivo_id_real
+
+    nuevo = models.EventoImpacto(**datos)
     db.add(nuevo)
     try:
         db.commit()
+        db.refresh(nuevo)
+        return nuevo
     except IntegrityError:
         # Carrera entre dos reintentos casi simultáneos: alguien más
         # ya insertó el mismo clave_cliente entre el SELECT y el INSERT.
@@ -69,7 +90,7 @@ def _crear_o_recuperar_evento(evento: schemas.EventoCrear, db: Session) -> model
         existente = (
             db.query(models.EventoImpacto)
             .filter(
-                models.EventoImpacto.dispositivo_id == evento.dispositivo_id,
+                models.EventoImpacto.dispositivo_id == dispositivo_id_real,
                 models.EventoImpacto.clave_cliente == evento.clave_cliente,
             )
             .first()
@@ -77,8 +98,9 @@ def _crear_o_recuperar_evento(evento: schemas.EventoCrear, db: Session) -> model
         if existente:
             return existente
         raise
-    db.refresh(nuevo)
-    return nuevo
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=f"Error al guardar evento: {str(e)}")
 
 
 @router.post("", response_model=schemas.EventoSalida)
