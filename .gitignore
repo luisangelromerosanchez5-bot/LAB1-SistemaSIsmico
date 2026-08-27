@@ -1,0 +1,16 @@
+# Entornos virtuales de Python
+backend/venv/
+__pycache__/
+*.pyc
+*.sqlite
+*.db
+
+# Flutter & Android build files
+frontend/.dart_tool/
+frontend/.idea/
+frontend/build/
+frontend/.pub-cache/
+frontend/android/.gradle/
+frontend/android/app/build/
+frontend/pubspec.lock
+.DS_Store
