@@ -32,6 +32,17 @@ class EventoCrear(BaseModel):
     precision_m: Optional[float] = None
     ocurrido_en: datetime
 
+    @field_validator("dispositivo_id", mode="before")
+    @classmethod
+    def validar_dispositivo_id(cls, v):
+        import uuid as _uuid
+        if isinstance(v, UUID):
+            return v
+        try:
+            return UUID(str(v))
+        except (ValueError, TypeError):
+            return _uuid.uuid5(_uuid.NAMESPACE_DNS, str(v))
+
 
 class EventoSalida(BaseModel):
     id: UUID

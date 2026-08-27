@@ -13,6 +13,13 @@ class IdentidadDispositivo {
   /// Obtiene o genera un UUID v4 persistente para este dispositivo.
   Future<String> obtenerDispositivoId() async {
     final nuevoUuid = _uuidGen.v4();
-    return await _cola.obtenerOEstablecerDispositivoId(nuevoUuid);
+    final guardado = await _cola.obtenerOEstablecerDispositivoId(nuevoUuid);
+    try {
+      Uuid.parse(guardado);
+      return guardado;
+    } catch (_) {
+      await _cola.sobrescribirDispositivoId(nuevoUuid);
+      return nuevoUuid;
+    }
   }
 }

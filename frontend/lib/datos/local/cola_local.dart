@@ -63,6 +63,15 @@ class ColaLocal {
     return fallbackUuid;
   }
 
+  Future<void> sobrescribirDispositivoId(String nuevoUuid) async {
+    final db = await _abrir();
+    await db.insert(
+      'configuracion',
+      {'clave': 'dispositivo_id', 'valor': nuevoUuid},
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
   Future<void> encolar(EventoImpacto evento) async {
     final db = await _abrir();
     await db.insert(
