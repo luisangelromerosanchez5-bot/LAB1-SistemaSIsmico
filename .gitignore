@@ -14,3 +14,4 @@ frontend/android/.gradle/
 frontend/android/app/build/
 frontend/pubspec.lock
 .DS_Store
+*.pdf
