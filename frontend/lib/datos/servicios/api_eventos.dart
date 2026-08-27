@@ -15,7 +15,7 @@ class ApiEventos {
 
   ApiEventos({
     required this.dispositivoId,
-    String baseUrl = 'http://192.168.1.52:8000',
+    String baseUrl = 'https://bitacora-sismica-api.onrender.com',
     ColaLocal? cola,
   })  : _cola = cola ?? ColaLocal(),
         _dio = Dio(BaseOptions(
