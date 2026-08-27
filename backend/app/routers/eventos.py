@@ -24,9 +24,27 @@ router = APIRouter(prefix="/api/eventos", tags=["eventos"])
 
 
 def _crear_o_recuperar_evento(evento: schemas.EventoCrear, db: Session) -> models.EventoImpacto:
-    # Validación de contrato antes de tocar la base de datos.
-    if evento.ocurrido_en > datetime.now(timezone.utc) + timedelta(minutes=1):
+    # Validación de contrato: tolerancia de hasta 10 minutos por descompaginación de reloj en celulares.
+    if evento.ocurrido_en > datetime.now(timezone.utc) + timedelta(minutes=10):
         raise HTTPException(status_code=422, detail="Marca de tiempo en el futuro")
+
+    # Auto-registro transparente de dispositivo si el id UUID no existía aún en la BD.
+    dispositivo = (
+        db.query(models.Dispositivo)
+        .filter(models.Dispositivo.id == evento.dispositivo_id)
+        .first()
+    )
+    if not dispositivo:
+        nuevo_disp = models.Dispositivo(
+            id=evento.dispositivo_id,
+            identificador=f"MOVIL-{str(evento.dispositivo_id)[:8]}",
+            modelo="Android Device",
+        )
+        db.add(nuevo_disp)
+        try:
+            db.commit()
+        except IntegrityError:
+            db.rollback()
 
     existente = (
         db.query(models.EventoImpacto)
