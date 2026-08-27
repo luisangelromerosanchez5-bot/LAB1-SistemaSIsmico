@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../dominio/entidades/evento_impacto.dart';
 import '../local/cola_local.dart';
@@ -24,9 +25,23 @@ class ApiEventos {
           receiveTimeout: const Duration(seconds: 5),
         ));
 
+  Future<void> asegurarRegistroDispositivo() async {
+    try {
+      await _dio.post(
+        '/api/dispositivos',
+        data: {
+          'identificador': dispositivoId,
+          'modelo': 'Android Device',
+        },
+      );
+    } catch (_) {}
+  }
+
   Future<void> sincronizarPendientes() async {
     final List<EventoImpacto> pendientes = await _cola.pendientes();
     if (pendientes.isEmpty) return;
+
+    await asegurarRegistroDispositivo();
 
     for (final evento in pendientes) {
       try {
@@ -37,7 +52,7 @@ class ApiEventos {
         final idRemoto = respuesta.data['id'] as String?;
         await _cola.marcarSincronizado(evento.claveCliente, idRemoto: idRemoto);
       } on DioException catch (e) {
-        print('Error de sincronización con Render: ${e.response?.statusCode} - ${e.response?.data}');
+        debugPrint('Error de sincronización con Render: ${e.response?.statusCode} - ${e.response?.data}');
         return;
       }
     }

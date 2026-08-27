@@ -37,7 +37,7 @@ def _crear_o_recuperar_evento(evento: schemas.EventoCrear, db: Session) -> model
     if not dispositivo:
         nuevo_disp = models.Dispositivo(
             id=evento.dispositivo_id,
-            identificador=f"MOVIL-{str(evento.dispositivo_id)[:8]}",
+            identificador=str(evento.dispositivo_id),
             modelo="Android Device",
         )
         db.add(nuevo_disp)
