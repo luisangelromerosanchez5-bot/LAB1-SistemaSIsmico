@@ -1,3 +1,5 @@
+import uuid
+from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -17,7 +19,13 @@ def registrar_dispositivo(datos: schemas.DispositivoCrear, db: Session = Depends
     if existente:
         return existente
 
+    try:
+        dev_id = UUID(datos.identificador)
+    except (ValueError, TypeError, AttributeError):
+        dev_id = uuid.uuid4()
+
     dispositivo = models.Dispositivo(
+        id=dev_id,
         identificador=datos.identificador,
         modelo=datos.modelo,
     )
