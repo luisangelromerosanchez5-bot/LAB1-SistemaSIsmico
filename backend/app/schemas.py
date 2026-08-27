@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Literal, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class DispositivoCrear(BaseModel):
@@ -19,8 +19,7 @@ class DispositivoSalida(BaseModel):
     identificador: str
     modelo: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class EventoCrear(BaseModel):
@@ -46,8 +45,7 @@ class EventoSalida(BaseModel):
     recibido_en: datetime
     clave_cliente: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ResumenSeveridad(BaseModel):
