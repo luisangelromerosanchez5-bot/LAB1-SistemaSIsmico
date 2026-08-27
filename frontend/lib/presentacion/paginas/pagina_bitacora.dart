@@ -48,6 +48,8 @@ class _PaginaBitacoraState extends State<PaginaBitacora> {
     }
 
     await _cargarHistorico();
+    await api.sincronizarPendientes();
+    await _cargarHistorico();
   }
 
   Future<void> _cargarHistorico() async {
@@ -59,6 +61,13 @@ class _PaginaBitacoraState extends State<PaginaBitacora> {
           ..addAll(historico);
       });
     }
+  }
+
+  Future<void> _simularImpactoPrueba() async {
+    if (_vigia == null) return;
+    await _vigia!.registrarImpactoPrueba(24.5);
+    await Future.delayed(const Duration(milliseconds: 500));
+    await _cargarHistorico();
   }
 
   void _alternarMonitoreo() {
@@ -87,7 +96,21 @@ class _PaginaBitacoraState extends State<PaginaBitacora> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Bitácora sísmica CEET')),
+      appBar: AppBar(
+        title: const Text('Bitácora sísmica CEET'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () async {
+              if (_vigia != null) {
+                await _vigia!.api.sincronizarPendientes();
+                await _cargarHistorico();
+              }
+            },
+            tooltip: 'Sincronizar ahora',
+          )
+        ],
+      ),
       body: _cargando
           ? const Center(child: CircularProgressIndicator())
           : Column(
@@ -107,10 +130,20 @@ class _PaginaBitacoraState extends State<PaginaBitacora> {
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       const SizedBox(height: 12),
-                      FilledButton.icon(
-                        onPressed: _alternarMonitoreo,
-                        icon: Icon(_monitoreando ? Icons.stop : Icons.play_arrow),
-                        label: Text(_monitoreando ? 'Detener' : 'Iniciar'),
+                      Wrap(
+                        spacing: 8,
+                        children: [
+                          FilledButton.icon(
+                            onPressed: _alternarMonitoreo,
+                            icon: Icon(_monitoreando ? Icons.stop : Icons.play_arrow),
+                            label: Text(_monitoreando ? 'Detener' : 'Iniciar'),
+                          ),
+                          OutlinedButton.icon(
+                            onPressed: _simularImpactoPrueba,
+                            icon: const Icon(Icons.vibration),
+                            label: const Text('Simular Impacto'),
+                          ),
+                        ],
                       ),
                     ],
                   ),
