@@ -1,18 +1,24 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from . import models
 from .database import Base, engine
 from .routers import dispositivos, eventos
 
-# En un proyecto de evaluación con migraciones versionadas usarías Alembic;
-# create_all() es suficiente para el alcance de P1 y para arrancar rápido.
-# Documenta esta decisión en docs/decisiones.md.
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Bitácora sísmica CEET · P1",
     description="API del miniproyecto P1 del banco de sensores en Flutter (SENA).",
     version="0.1.0",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(dispositivos.router)
