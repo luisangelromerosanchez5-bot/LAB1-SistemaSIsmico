@@ -36,9 +36,8 @@ class ApiEventos {
         );
         final idRemoto = respuesta.data['id'] as String?;
         await _cola.marcarSincronizado(evento.claveCliente, idRemoto: idRemoto);
-      } on DioException {
-        // Sin red o el servidor no respondió: el evento se queda en la
-        // cola y se reintentará en la próxima llamada. No se pierde nada.
+      } on DioException catch (e) {
+        print('Error de sincronización con Render: ${e.response?.statusCode} - ${e.response?.data}');
         return;
       }
     }
